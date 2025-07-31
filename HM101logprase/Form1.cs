@@ -149,10 +149,6 @@ namespace SteelLogImporter
             }
         }
 
-       
-
-        
-
         private void ProcessLogFile(string filePath)
         {
             // 解析日志
@@ -324,7 +320,7 @@ namespace SteelLogImporter
         {
             if (_fileQueue.Count > 0)
             {
-                string filePath = _fileQueue.Dequeue();
+                string filePath = _fileQueue.Dequeue();                    
                 try
                 {
                     // 等待文件写入完成
@@ -344,7 +340,5 @@ namespace SteelLogImporter
                 }
             }
         }
-
-   
     }
 }
