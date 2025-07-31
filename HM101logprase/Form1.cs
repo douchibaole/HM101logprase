@@ -7,6 +7,7 @@ using System.Linq;
 using System.Timers;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using System.Configuration;
 using HTWL.Communication;
 using Models;
 using SqlSugar;
@@ -23,23 +24,23 @@ namespace SteelLogImporter
         private string _selectedFilePath;
         private SqlSugarClient DBClinet;
         private readonly LogParser _logParser = new LogParser();
-        private FileSystemWatcher _watcher;
-     
-        public static ILogNet LogNet { get; set; }
+        private FileSystemWatcher _watcher; 
+        public static ILogNet LogNet { get; set; }   
         private Queue<string> _fileQueue = new Queue<string>();
         private System.Timers.Timer _processingTimer;
-
-
-
 
         public Form1()
         {
             InitializeComponent();
             DBClinet = Communication.dbMYSQL2;
-            StartMonitoring(@"F:\logs"); // 替换为实际的目标文件夹路径
+
+            string logDirectoryPath = ConfigurationManager.AppSettings["LogDirectoryPath"];
+            StartMonitoring(logDirectoryPath);
+           
             Process processes = Process.GetCurrentProcess();
             string name = processes.ProcessName;
-            LogNet = new LogNetDateTime("F:\\中厚板二级\\HM101PDOPARSELOG\\" + name, GenerateMode.ByEveryDay);
+            string logOutputPath = ConfigurationManager.AppSettings["LogOutputPath"];
+            LogNet = new LogNetDateTime(logOutputPath + name, GenerateMode.ByEveryDay);
 
             // 初始化定时器，每秒触发一次
             _processingTimer = new System.Timers.Timer(250);
@@ -48,10 +49,10 @@ namespace SteelLogImporter
 
             DateTime? latestCreateTime = GetLatestCreateTime();
 
-            string logFolder = @"F:\logs"; // 替换为实际的日志文件夹路径
-            if (Directory.Exists(logFolder))
+            
+            if (Directory.Exists(logDirectoryPath))
             {
-                string[] logFiles = Directory.GetFiles(logFolder, "*.txt", SearchOption.AllDirectories);
+                string[] logFiles = Directory.GetFiles(logDirectoryPath, "*.txt", SearchOption.AllDirectories);
                 foreach (string logFile in logFiles)
                 {
                     FileInfo fileInfo = new FileInfo(logFile);
@@ -67,8 +68,11 @@ namespace SteelLogImporter
                         }
                         catch (Exception ex)
                         {
-                            LogNet.WriteInfo(logFile + " -数据解析失败" + ex.Message);
-                            MessageBox.Show($"数据解析失败: {ex.Message}");
+                            LogNet.WriteInfo(logFile + " -数据解析失败" + ex.Message);                            
+                            this.Invoke((MethodInvoker)(() =>
+                            {
+                                MessageBox.Show($"数据解析失败: {ex.Message}");
+                            }));
                         }
                     }
                 }
@@ -90,19 +94,17 @@ namespace SteelLogImporter
         private void OnFileCreated(object sender, FileSystemEventArgs e)
         {
             try
-            {
-                //// 等待文件写入完成
-                //WaitForFileToBeReady(e.FullPath);
-
-                //// 处理日志文件
-                //ProcessLogFile(e.FullPath);
-
+            {                
                 _fileQueue.Enqueue(e.FullPath);
             }
             catch (Exception ex)
             {
                 LogNet.WriteInfo(e.FullPath + " -数据解析失败" + ex.Message);
-                MessageBox.Show($"数据解析失败: {ex.Message}");               
+               
+                this.Invoke((MethodInvoker)(() =>
+                {
+                    MessageBox.Show($"数据解析失败: {ex.Message}");
+                }));
             }
         }
 
@@ -118,7 +120,11 @@ namespace SteelLogImporter
 
         private void OnError(object sender, ErrorEventArgs e)
         {
-            MessageBox.Show($"监控出错: {e.GetException().Message}");
+            LogNet.WriteInfo(" -数据解析失败" + e.GetException().Message);
+            this.Invoke((MethodInvoker)(() =>
+            {
+                MessageBox.Show($"数据解析失败: {e.GetException().Message}");
+            }));
         }
 
         private void WaitForFileToBeReady(string filePath)
@@ -303,8 +309,7 @@ namespace SteelLogImporter
             DBClinet.Insertable(LogPrase).ExecuteCommand();
             DBClinet.Insertable(listLogPrasepass).ExecuteCommand();
 
-            LogNet.WriteInfo(filePath+" -数据解析成功");
-          //  MessageBox.Show("数据解析成功");
+            LogNet.WriteInfo(filePath+" -数据解析成功"); 
             
             
         }
@@ -331,7 +336,11 @@ namespace SteelLogImporter
                 catch (Exception ex)
                 {
                     LogNet.WriteInfo(filePath + " -数据解析失败" + ex.Message);
-                    MessageBox.Show($"数据解析失败: {ex.Message}");
+                    
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        MessageBox.Show($"数据解析失败: {ex.Message}");
+                    }));
                 }
             }
         }
