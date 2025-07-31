@@ -15,42 +15,23 @@
 
         private void InitializeComponent()
         {
-            this.txtFilePath = new System.Windows.Forms.TextBox();
-            this.btnSelectFile = new System.Windows.Forms.Button();
-            this.btnImport = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // txtFilePath
+            // label1
             // 
-            this.txtFilePath.Location = new System.Drawing.Point(12, 12);
-            this.txtFilePath.Name = "txtFilePath";
-            this.txtFilePath.Size = new System.Drawing.Size(350, 25);
-            this.txtFilePath.TabIndex = 0;
-            // 
-            // btnSelectFile
-            // 
-            this.btnSelectFile.Location = new System.Drawing.Point(368, 10);
-            this.btnSelectFile.Name = "btnSelectFile";
-            this.btnSelectFile.Size = new System.Drawing.Size(93, 23);
-            this.btnSelectFile.TabIndex = 1;
-            this.btnSelectFile.Text = "浏览...";
-            this.btnSelectFile.Click += new System.EventHandler(this.btnSelectFile_Click);
-            // 
-            // btnImport
-            // 
-            this.btnImport.Location = new System.Drawing.Point(12, 39);
-            this.btnImport.Name = "btnImport";
-            this.btnImport.Size = new System.Drawing.Size(98, 23);
-            this.btnImport.TabIndex = 2;
-            this.btnImport.Text = "解析PDO";
-            this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("宋体", 14F);
+            this.label1.Location = new System.Drawing.Point(66, 42);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(358, 24);
+            this.label1.TabIndex = 3;
+            this.label1.Text = "轧钢一线PDO解析程序正在运行！";
             // 
             // Form1
             // 
-            this.ClientSize = new System.Drawing.Size(473, 84);
-            this.Controls.Add(this.txtFilePath);
-            this.Controls.Add(this.btnSelectFile);
-            this.Controls.Add(this.btnImport);
+            this.ClientSize = new System.Drawing.Size(517, 162);
+            this.Controls.Add(this.label1);
             this.Name = "Form1";
             this.Text = "轧钢一线PDO解析工具";
             this.ResumeLayout(false);
@@ -58,9 +39,7 @@
 
         }
 
-        private System.Windows.Forms.TextBox txtFilePath;
-        private System.Windows.Forms.Button btnSelectFile;
-        private System.Windows.Forms.Button btnImport;
+        private System.Windows.Forms.Label label1;
     }
 }
 

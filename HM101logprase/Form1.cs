@@ -143,38 +143,9 @@ namespace SteelLogImporter
             }
         }
 
-        private void btnSelectFile_Click(object sender, EventArgs e)
-        {
-            using (var ofd = new OpenFileDialog())
-            {
-                ofd.Filter = "日志文件 (*.txt)|*.txt|所有文件 (*.*)|*.*";
-                if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    _selectedFilePath = ofd.FileName;
-                    txtFilePath.Text = _selectedFilePath;
-                }
-            }
-        }
+       
 
-        private void btnImport_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(_selectedFilePath))
-            {
-                MessageBox.Show("请选择日志文件");
-                return;
-            }
-
-            try
-            {
-                // 处理日志文件
-                ProcessLogFile(_selectedFilePath);
-            }
-            catch (Exception ex)
-            {
-                LogNet.WriteInfo(_selectedFilePath + " -数据解析失败" + ex.Message);
-                MessageBox.Show($"数据解析失败: {ex.Message}");
-            }
-        }
+        
 
         private void ProcessLogFile(string filePath)
         {
@@ -364,6 +335,7 @@ namespace SteelLogImporter
                 }
             }
         }
-    
-}
+
+   
+    }
 }
