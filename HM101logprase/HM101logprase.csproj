@@ -73,6 +73,7 @@
     <Compile Include="MessageIdGenerator.cs" />
     <Compile Include="MODE\hm101_pdo.cs" />
     <Compile Include="MODE\hm101_pdo_pass.cs" />
+    <Compile Include="ObjectMapper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">

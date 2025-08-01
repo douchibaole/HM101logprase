@@ -73,6 +73,12 @@ namespace SteelLogImporter.Parser
                     //continue;
                 }
 
+                else if (trimLine.Contains("*   MAS setup data"))
+                {
+                    currentSection = "MASData";
+                    //continue;
+                }
+
                 else
                 {
                     //currentSection = string.Empty;
@@ -107,6 +113,9 @@ namespace SteelLogImporter.Parser
 
                     case "RollingData":
                         ParseRollingData(trimLine, passLogs, mainLog);
+                        break;
+                    case "MASData":
+                        ParseMASData(trimLine, mainLog);
                         break;
                 }
             }
@@ -422,6 +431,85 @@ namespace SteelLogImporter.Parser
                 //预留
             }
            
+
+        }
+
+        private void ParseMASData(string line, hm101_pdo log)
+        {
+            if (line.Contains("l_s ="))
+            {
+                log.MAS_L_S = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.Contains("l1_s ="))
+            {
+                log.MAS_L1_S = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.Contains("l2_s ="))
+            {
+                log.MAS_L2_S = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.Contains("dh_s ="))
+            {
+                log.MAS_DH_S = ParseDecimalValue(line, 1, 0, 20);
+            }
+
+            else if (line.StartsWith("g_s ="))
+            {
+                log.MAS_G_S = ParseDecimalValue(line, 1, 0, 20);             
+            }
+            else if (line.StartsWith("dg_s ="))
+            {
+                log.MAS_DG_S = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.Contains("fs1_s ="))
+            {
+                log.MAS_FS1_S = ParseDecimalValue(line, 1, 0, 20);
+            }
+
+            else if (line.Contains("fs_s ="))
+            {
+                log.MAS_FS_S = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.Contains("l_b ="))
+            {
+                log.MAS_L_B = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.Contains("l1_b ="))
+            {
+                log.MAS_L1_B = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.Contains("l2_b ="))
+            {
+                log.MAS_L2_B = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.Contains("dh_b ="))
+            {
+                log.MAS_DH_B = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.StartsWith("g_b ="))
+            {
+                log.MAS_G_B = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.StartsWith("dg_b"))
+            {
+                log.MAS_DG_B = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.Contains("fs1_b ="))
+            {
+                log.MAS_FS1_B = ParseDecimalValue(line, 1, 0, 20);
+            }
+            else if (line.Contains("fs_b ="))
+            {
+                log.MAS_FS_B = ParseDecimalValue(line, 1, 0, 20);
+            }
+
+
+
+            else
+            {
+                //预留
+            }
+
 
         }
 
