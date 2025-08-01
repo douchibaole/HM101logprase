@@ -64,11 +64,11 @@
   <ItemGroup>
     <Compile Include="Communication.cs" />
     <Compile Include="LogParser.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="Form_HM101PDO_Parse.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Form_HM101PDO_Parse.Designer.cs">
+      <DependentUpon>Form_HM101PDO_Parse.cs</DependentUpon>
     </Compile>
     <Compile Include="MessageIdGenerator.cs" />
     <Compile Include="MODE\hm101_pdo.cs" />
@@ -76,8 +76,8 @@
     <Compile Include="ObjectMapper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="Form_HM101PDO_Parse.resx">
+      <DependentUpon>Form_HM101PDO_Parse.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
