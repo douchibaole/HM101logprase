@@ -222,7 +222,8 @@ namespace SteelLogImporter
                 catch (Exception ex)
                 {
                     LogNet.WriteInfo(filePath + " -数据解析失败" + ex.Message);
-                    
+                    LogReceived?.Invoke(filePath + " -数据解析失败" + ex.Message);
+
                     this.Invoke((MethodInvoker)(() =>
                     {
                         MessageBox.Show($"数据解析失败: {ex.Message}");
@@ -281,6 +282,8 @@ namespace SteelLogImporter
                                 catch (Exception ex)
                                 {
                                     LogNet.WriteInfo(logFile + " -数据解析失败" + ex.Message);
+                                    LogReceived?.Invoke(logFile + " -数据解析失败" + ex.Message);
+
                                     this.Invoke((MethodInvoker)(() =>
                                     {
                                         MessageBox.Show($"数据解析失败: {ex.Message}");
