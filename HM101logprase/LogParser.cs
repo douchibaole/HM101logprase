@@ -11,7 +11,7 @@ namespace SteelLogImporter.Parser
     public class LogParser
     {
         private string _rollingStage = string.Empty;
-        private static readonly Random random = new Random();
+        
        
         public (hm101_pdo mainLog, List<hm101_pdo_pass> passLogs) ParseLog(string filePath)
         {

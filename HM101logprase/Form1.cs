@@ -14,6 +14,7 @@ using SqlSugar;
 using SteelLogImporter.Parser;
 using XYGCommunication;
 using XYGCommunication.LogNet;
+using System.Threading.Tasks;
 
 
 
@@ -28,6 +29,9 @@ namespace SteelLogImporter
         private Queue<string> _fileQueue = new Queue<string>();
         private System.Timers.Timer _processingTimer;
 
+        public delegate void LogReceivedEventHandler(string logMessage);
+        public event LogReceivedEventHandler LogReceived;
+
         public Form1()
         {
             InitializeComponent();
@@ -41,41 +45,30 @@ namespace SteelLogImporter
             string logOutputPath = ConfigurationManager.AppSettings["LogOutputPath"];
             LogNet = new LogNetDateTime(logOutputPath + name, GenerateMode.ByEveryDay);
 
-            // 初始化定时器，每秒触发一次
+        
+
+            // 添加日志事件处理
+            LogReceived += (message) =>
+            {
+                if (richTextBoxLog.InvokeRequired)
+                {
+                    richTextBoxLog.Invoke(new Action<string>((msg) =>
+                    {
+                        AddLogToUI(msg);
+                    }), message);
+                }
+                else
+                {
+                    AddLogToUI(message);
+                }
+            };
+
+            // 初始化定时器，每250ms触发一次
             _processingTimer = new System.Timers.Timer(250);
             _processingTimer.Elapsed += OnProcessingTimerElapsed;
             _processingTimer.Start();
 
-            DateTime? latestCreateTime = GetLatestCreateTime();
-
-            
-            if (Directory.Exists(logDirectoryPath))
-            {
-                string[] logFiles = Directory.GetFiles(logDirectoryPath, "*.txt", SearchOption.AllDirectories);
-                foreach (string logFile in logFiles)
-                {
-                    FileInfo fileInfo = new FileInfo(logFile);
-                    if ((latestCreateTime == null || fileInfo.CreationTime > latestCreateTime.Value) && fileInfo.CreationTime >= new DateTime(2025, 7, 31,0,0,0))
-                    {
-                        try
-                        {
-                            // 等待文件写入完成
-                            WaitForFileToBeReady(logFile);
-
-                            // 处理日志文件
-                            ProcessLogFile(logFile);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogNet.WriteInfo(logFile + " -数据解析失败" + ex.Message);                            
-                            this.Invoke((MethodInvoker)(() =>
-                            {
-                                MessageBox.Show($"数据解析失败: {ex.Message}");
-                            }));
-                        }
-                    }
-                }
-            }
+           
         }
 
         private void StartMonitoring(string path)
@@ -99,7 +92,8 @@ namespace SteelLogImporter
             catch (Exception ex)
             {
                 LogNet.WriteInfo(e.FullPath + " -数据解析失败" + ex.Message);
-               
+                LogReceived?.Invoke(e.FullPath + " -数据解析失败" + ex.Message);
+
                 this.Invoke((MethodInvoker)(() =>
                 {
                     MessageBox.Show($"数据解析失败: {ex.Message}");
@@ -120,6 +114,7 @@ namespace SteelLogImporter
         private void OnError(object sender, ErrorEventArgs e)
         {
             LogNet.WriteInfo(" -数据解析失败" + e.GetException().Message);
+            LogReceived?.Invoke( " -数据解析失败" + e.GetException().Message);
             this.Invoke((MethodInvoker)(() =>
             {
                 MessageBox.Show($"数据解析失败: {e.GetException().Message}");
@@ -199,9 +194,10 @@ namespace SteelLogImporter
             DBClinet.Insertable(LogPrase).ExecuteCommand();
             DBClinet.Insertable(listLogPrasepass).ExecuteCommand();
 
-            LogNet.WriteInfo(filePath+" -数据解析成功"); 
-            
-            
+            LogNet.WriteInfo(filePath+" -数据解析成功");
+            LogReceived?.Invoke(filePath + " -数据解析成功");
+
+
         }
 
 
@@ -238,6 +234,67 @@ namespace SteelLogImporter
         private void button1_Click(object sender, EventArgs e)
         {
             DBClinet.DbFirst.IsCreateAttribute().CreateClassFile("c:\\Demo", "Models");
+        }
+
+        // 在Form1类中添加
+        private void AddLogToUI(string message)
+        {
+            // 限制日志显示行数，防止内存溢出
+            if (richTextBoxLog.Lines.Length > 1000)
+            {
+                // 保留最后500行
+                var lines = richTextBoxLog.Lines.Skip(richTextBoxLog.Lines.Length - 500).ToArray();
+                richTextBoxLog.Lines = lines;
+            }
+
+            // 添加新日志，包含时间戳
+            richTextBoxLog.AppendText($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}\n");
+            // 滚动到最新日志
+            richTextBoxLog.ScrollToCaret();
+        }
+
+        // Form1.cs 新增Load事件处理
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            // 窗体显示后，在后台异步处理历史日志
+            Task.Run(() =>
+            {
+                try
+                {
+                    string logDirectoryPath = ConfigurationManager.AppSettings["LogDirectoryPath"];
+                    DateTime? latestCreateTime = GetLatestCreateTime();
+
+                    if (Directory.Exists(logDirectoryPath))
+                    {
+                        string[] logFiles = Directory.GetFiles(logDirectoryPath, "*.txt", SearchOption.AllDirectories);
+                        foreach (string logFile in logFiles)
+                        {
+                            FileInfo fileInfo = new FileInfo(logFile);
+                            if ((latestCreateTime == null || fileInfo.CreationTime > latestCreateTime.Value) &&
+                                fileInfo.CreationTime >= new DateTime(2025, 7, 31, 0, 0, 0))
+                            {
+                                try
+                                {
+                                    WaitForFileToBeReady(logFile);
+                                    ProcessLogFile(logFile);
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogNet.WriteInfo(logFile + " -数据解析失败" + ex.Message);
+                                    this.Invoke((MethodInvoker)(() =>
+                                    {
+                                        MessageBox.Show($"数据解析失败: {ex.Message}");
+                                    }));
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogNet.WriteInfo("初始化历史日志处理失败: " + ex.Message);
+                }
+            });
         }
     }
 }
