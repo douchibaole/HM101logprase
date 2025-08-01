@@ -37,9 +37,11 @@ namespace SteelLogImporter
             InitializeComponent();
             DBClinet = Communication.dbMYSQL2;
 
-            string logDirectoryPath = ConfigurationManager.AppSettings["LogDirectoryPath"];
-            StartMonitoring(logDirectoryPath);
-           
+            string logDirectoryPath_HM101 = ConfigurationManager.AppSettings["LogDirectoryPath_HM101"];
+            string logDirectoryPath_HM102 = ConfigurationManager.AppSettings["LogDirectoryPath_HM102"];
+            StartMonitoring(logDirectoryPath_HM101);
+          //  StartMonitoring(logDirectoryPath_HM102);
+
             Process processes = Process.GetCurrentProcess();
             string name = processes.ProcessName;
             string logOutputPath = ConfigurationManager.AppSettings["LogOutputPath"];
@@ -86,8 +88,12 @@ namespace SteelLogImporter
         private void OnFileCreated(object sender, FileSystemEventArgs e)
         {
             try
-            {                
-                _fileQueue.Enqueue(e.FullPath);
+            {
+                // 检查文件是否已在队列中（简单去重）
+                if (!_fileQueue.Contains(e.FullPath))
+                {
+                    _fileQueue.Enqueue(e.FullPath);
+                }
             }
             catch (Exception ex)
             {
@@ -123,7 +129,7 @@ namespace SteelLogImporter
 
         private void WaitForFileToBeReady(string filePath)
         {
-            int maxAttempts = 10;
+            int maxAttempts = 20;
             int attempts = 0;
             while (attempts < maxAttempts)
             {
@@ -137,7 +143,7 @@ namespace SteelLogImporter
                 }
                 catch (IOException)
                 {
-                    System.Threading.Thread.Sleep(1000); // 等待 1 秒
+                    System.Threading.Thread.Sleep(2000); // 等待 2 秒
                     attempts++;
                 }
             }
@@ -222,7 +228,8 @@ namespace SteelLogImporter
                 catch (Exception ex)
                 {
                     LogNet.WriteInfo(filePath + " -数据解析失败" + ex.Message);
-                    
+                    LogReceived?.Invoke(filePath + " -数据解析失败" + ex.Message);
+
                     this.Invoke((MethodInvoker)(() =>
                     {
                         MessageBox.Show($"数据解析失败: {ex.Message}");
@@ -233,7 +240,7 @@ namespace SteelLogImporter
 
         private void button1_Click(object sender, EventArgs e)
         {
-            DBClinet.DbFirst.IsCreateAttribute().CreateClassFile("c:\\Demo", "Models");
+            
         }
 
         // 在Form1类中添加
@@ -261,8 +268,16 @@ namespace SteelLogImporter
             {
                 try
                 {
-                    string logDirectoryPath = ConfigurationManager.AppSettings["LogDirectoryPath"];
+                    string logDirectoryPath = ConfigurationManager.AppSettings["LogDirectoryPath_HM101"];
                     DateTime? latestCreateTime = GetLatestCreateTime();
+
+                    // 从配置文件读取处理起始时间
+                    DateTime processStartTime;
+                    if (!DateTime.TryParse(ConfigurationManager.AppSettings["ProcessStartTime"], out processStartTime))
+                    {
+                        // 如果配置无效或未设置，使用默认值
+                        processStartTime = new DateTime(2025, 7, 31, 0, 0, 0);
+                    }
 
                     if (Directory.Exists(logDirectoryPath))
                     {
@@ -271,7 +286,7 @@ namespace SteelLogImporter
                         {
                             FileInfo fileInfo = new FileInfo(logFile);
                             if ((latestCreateTime == null || fileInfo.CreationTime > latestCreateTime.Value) &&
-                                fileInfo.CreationTime >= new DateTime(2025, 7, 31, 0, 0, 0))
+                                fileInfo.CreationTime >= processStartTime)
                             {
                                 try
                                 {
@@ -281,6 +296,8 @@ namespace SteelLogImporter
                                 catch (Exception ex)
                                 {
                                     LogNet.WriteInfo(logFile + " -数据解析失败" + ex.Message);
+                                    LogReceived?.Invoke(logFile + " -数据解析失败" + ex.Message);
+
                                     this.Invoke((MethodInvoker)(() =>
                                     {
                                         MessageBox.Show($"数据解析失败: {ex.Message}");
@@ -295,6 +312,11 @@ namespace SteelLogImporter
                     LogNet.WriteInfo("初始化历史日志处理失败: " + ex.Message);
                 }
             });
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            DBClinet.DbFirst.IsCreateAttribute().CreateClassFile("c:\\Demo", "Models");
         }
     }
 }

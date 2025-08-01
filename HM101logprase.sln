@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HM101logprase", "HM101logprase\HM101logprase.csproj", "{DC3E00EC-0E1D-4307-8922-52F886FC4BDE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HM101PDO_Parse", "HM101logprase\HM101PDO_Parse.csproj", "{DC3E00EC-0E1D-4307-8922-52F886FC4BDE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
